@@ -1,0 +1,545 @@
+/*answer of question 1*/
+
+declare
+    health char := :health;
+    age int := :age;
+    city char := :city;
+    gender char := :gender;
+    p int:= 0;
+begin
+  if( health = 'e'  and (age >= 25 and age <=35)  and city ='c' and gender='m' ) then
+     p := 4000;
+  elsif( health = 'e'  and (age >= 25 and age <=35)  and city ='c' and gender='f' ) then
+     p := 3000;
+  elsif( health = 'P'  and (age >= 25 and age <=35)  and city ='v' and gender='m' ) then
+     p := 6000;
+  else 
+     p := 0;
+  end if;
+  
+  if(p = 0) then
+        dbms_output.put_line('Premium not insured!');
+    else dbms_output.put_line('Premium insured is '||p) ;
+    end if;
+end;
+
+
+/*answer of question 2*/
+create or replace function check_dudney(n int) return int as
+d int := n;
+dd int := n;
+temp int := 0;
+r int := 0;
+ begin
+    while dd <> 0 loop
+      temp := temp+ mod(dd,10);
+      dd := Trunc(dd/10);
+    end loop;
+    if(temp*temp*temp = d) then
+        dbms_output.put_line('Yes dudney');
+        r := 1;
+    else
+        dbms_output.put_line('No dudney');
+        r := 0;
+
+    end if;
+
+    return r;
+end;
+
+
+declare
+    d int := :enter_a_number;
+    k int ;
+begin
+  k := check_dudney(d);
+end;
+
+
+/*answer of 3rd*/
+create table person(
+    person_id int primary key,
+    first_name varchar(20),
+    middle_name varchar(20),
+    last_name varchar(20),
+    gender varchar(10),
+    birth_date date
+)
+
+begin
+insert into person values (1, 'hemal', 'harshad', 'shah', 'f', '10-22-2000');
+insert into person values (2, 'alpcs', 'otg', 'ambr', 'f', '01-21-1953');
+insert into person values (3, 'u', 'c', 'k', 'm', '04-09-2000');
+insert into person values (4, 'pwsf', 'hari', 'noob', 'm', '05-17-1999');
+end
+
+
+
+create or replace procedure disp_person as
+      cursor c_person is select * from person;
+      r_person c_person%rowtype;
+      bd int;age int;
+      init varchar(7);
+begin
+        for r_person in c_person loop
+             bd:=EXTRACT(year from r_person.birth_date);
+             age:=2020-bd;
+
+    if(r_person.gender='f' and age>12) then
+             init:='Ms. ';
+    elsif(r_person.gender='f' and age<=12) then
+             init:='Baby ';
+    elsif(r_person.gender='m' and age<=12) then
+             init:='Master ';
+    elsif(r_person.gender='m' and age>12) then
+             init:='Mr. ';
+    end if;
+    dbms_output.put_line(init|| '  '||r_person.first_name||''||r_person.middle_name||' '|| r_person.last_name);
+        end loop;
+end;
+
+ 
+
+declare
+
+begin
+
+        disp_person;
+
+end;
+
+ 
+
+select * from person
+
+/*answer of question 4th*/
+declare
+    days int := :Working_Days;
+    j_date date;
+    y int := 0;
+    m int := 0;
+    d int := 0;
+    fy varchar(5);
+    fm varchar(5);
+    fd varchar(5);
+    che char;
+begin
+    y :=days/365;
+    m :=mod(days,365)/30;
+    d :=mod(mod(days,365),30);
+
+
+    fy := TO_CHAR(SYSDATE,'yyyy')-y;
+    fm := to_char(sysdate,'mm')-m;
+    fd := to_char(sysdate,'dd')-d;
+
+
+    if(fd<=0) then
+      fd:= fd + 30;
+      fm:= fm - 1;
+    end if;
+    if(fm<=0) then
+      fm:= fm + 12;
+      fy:= fy - 1;
+    end if;
+    if(fd<=9) then
+      fd := concat(0,fd);
+    end if;
+    if(fm<=9) then
+      fm := concat(0,fm);
+    end if;
+    dbms_output.put_line('The joining date is ' || fd ||'/'|| fm ||'/'|| fy);
+end;
+
+
+/*answer of 5th*/
+
+create table applicant(app_id int primary key, app_name varchar(20),tenth_marks int,twelveth_marks int);
+begin
+insert into applicant values(1,'Alpha',67,89);
+insert into applicant values(2,'Utg',78,91);
+insert into applicant values(3,'Brws',50,70);
+insert into applicant values(4,'ALps',90,79);
+insert into applicant values(6,'atom',88,91);
+insert into applicant values(7,'delta',88,91);
+insert into applicant values(8,'beta',88,91);
+end;
+create or replace function is_eligible(app_id1 int) return int as
+      cursor c_applicant is select app_name,applicant.tenth_marks,applicant.twelveth_marks from applicant where app_id1 = applicant.app_id;
+      r_applicant c_applicant%rowtype;
+     
+     
+begin
+    for r_applicant in c_applicant loop
+   if (c_applicant%notfound) then
+       exit;
+   end if;
+   if(r_applicant.tenth_marks > 80 and r_applicant.twelveth_marks > 80) then
+   dbms_output.put_line('Congrats -' || r_applicant.app_name);
+    return 1;
+   else
+       dbms_output.put_line('Sorryy - '|| r_applicant.app_name);
+       return 0;
+    end if;
+    end loop;  
+       
+--close c_applicant;
+     
+end;
+
+declare
+   k int := :enter_a_number;
+  d int;
+begin
+  d := is_eligible(k);
+end;
+
+
+
+/*answer of 8th*/
+create table category(category_id int primary key, category_name varchar(30));
+create table event(event_id int primary key, event_name varchar(20), category_id int references category(category_id));
+
+begin
+insert into category values(1, 'shoes');
+insert into category values(2, 'shorts');
+insert into event values(11,'sale',1);
+insert into event values(12,'available',2);
+end
+
+create or replace procedure foo(category_name1 varchar) as
+    cursor cs is select event.event_name from event, category where category_name1 = category.category_name and category.category_id = event.category_id;
+    ccs cs % rowtype;
+begin
+    for ccs in cs loop
+        dbms_output.put_line(ccs.event_name);
+    end loop;
+end;
+
+
+  declare 
+    c_name varchar(20) := :Enter_name;
+begin
+    foo(c_name);
+end;
+
+
+/*answer of 9th*/
+create or replace procedure fun9 as 
+    cursor cs1 is select * from category order by category_id desc;
+    cursor cs2 is select * from event order by event_id ;
+    r1 cs1%rowtype;
+    r2 cs2%rowtype;
+
+    tot_event int := 0;
+    tot_cat int := 0;
+begin
+  for r1 in cs1 loop
+    dbms_output.put_line('<< '|| r1.category_name|| '>>');
+    tot_event := 0;
+     for r2 in cs2 loop
+       if(r1.category_id = r2.category_id) then
+            dbms_output.put_line(r2.event_name || ' ' || r2.event_id );
+            tot_event := tot_event + 1 ;
+         end if;
+      end loop;
+     tot_cat := tot_cat + 1;
+    dbms_output.put_line('The total number of events in category '|| r1.category_name || ' is : '|| tot_event);
+  end loop;
+  dbms_output.put_line('The total number categories are '|| tot_cat);
+end;
+
+declare
+begin
+  fun9;
+end;
+
+/* answer of 10th*/
+create table Category(category_id int primary key, category_name varchar(20));
+desc Category;
+begin
+insert into Category values (1, 'Sports');
+insert into Category values (2, 'Academics');
+insert into Category values (3, 'Activities');
+end;
+select * from Category
+
+
+create table event(event_id int primary key, event_name varchar(20), category_id int references Category(category_id));
+desc event;
+begin
+insert into event values (11, 'Basketball', 1);
+insert into event values (12, 'Cricket', 1);
+insert into event values (13, 'Hockey', 1);
+insert into event values (21, 'Quiz', 2);
+insert into event values (22, 'Extempore', 2);
+insert into event values (31, 'Dance', 3);
+insert into event values (32, 'Drawing', 3);
+end;
+select * from event
+
+
+create table participant (participant_id int primary key, participant_name varchar(20), event_id int references event(event_id), gender varchar(2));
+desc participant;
+begin
+insert into participant values (101  ,  'Yashil', 11, 'M');
+insert into participant values (102  ,  'dilo',   11, 'M');
+insert into participant values (103  ,  'josho',  12, 'M');
+insert into participant values (107  ,  'lalu',   11, 'M');
+insert into participant values (108  ,  'balu',   11, 'M');
+end;select * from participant
+
+
+select gender, count(gender) as cnt_G from participant group by gender 
+select event_id, count(event_id) as cnt_E from participant group by event_id
+
+create or replace procedure display_records as
+    E_i event.event_id%TYPE;
+    E_n event.event_name%TYPE;
+    P_i participant.participant_id%TYPE;
+    P_n participant.participant_name%TYPE;
+    P_E_id participant.event_id%TYPE;
+    G participant.gender%TYPE;
+    cnt int;
+    T_G_P int;
+    T_B_P int;
+    T_P int;
+    E_max varchar(10);
+    E_min varchar(10);
+    cursor c_Event is select event_id, event_name from event;
+    cursor c_Participant is select participant_id, participant_name, event_id, gender from participant;    
+begin
+    dbms_output.put_line(chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || sysdate);
+    dbms_output.put_line(chr(9) || chr(9) || chr(9) || 'PARTICIPATION DETAILS');
+    dbms_output.put_line(chr(9) || chr(9) || chr(9) || '=====================');
+    
+    select count(participant_id) into T_P from participant;
+    select count(gender) into T_G_P from participant where gender = 'F';
+    select count(gender) into T_B_P from participant where gender = 'M';
+
+    open c_Event;
+    loop
+        fetch c_Event into E_i, E_n;
+        exit when c_Event%NOTFOUND;
+        
+        dbms_output.put_line( 'event Name :: ' || E_n);
+        cnt := 0;
+        open c_Participant;
+        loop
+            fetch c_Participant into P_i, P_n, P_E_id, G;
+            exit when c_Participant%NOTFOUND;
+            if (P_E_id = E_i) then
+                cnt := cnt + 1;
+                dbms_output.put_line('participant :: ' || P_i || chr(9) || P_n);        
+            end if;             
+        end loop;
+        dbms_output.put_line(chr(9) || 'Total number of participants = ' || cnt);
+        dbms_output.put_line('');
+        close c_Participant;        
+    end loop;
+    close c_Event;
+    dbms_output.put_line('Total no of participants who are girls : ' || T_G_P);
+    dbms_output.put_line('Total no of participants who are boys : ' || T_B_P);
+    dbms_output.put_line('Overall total no. of participants : ' || T_P);
+end;
+
+declare    
+begin
+    display_records;
+end;
+
+/*answer of 6th*/
+create table student(std_id int primary key, std_name varchar(20));
+create table assignment(assignment_no int primary key, date_given date, last_date_of_submission date);
+create table submission(std_id int, assignment_no int, submitted_on_date date, foreign key(std_id) references student(std_id),
+ foreign key(assignment_no) references assignment(assignment_no));
+
+create or replace procedure fun6(fr date, to1 date) as
+cursor cs1 is select std_id, assignment_no, submitted_on_date from submission; 
+r1 cs1%rowtype;
+d date;
+name varchar(20);
+d1 date;
+id1 int;
+begin
+  for r1 in cs1 loop
+   select submitted_on_date into d from submission where submission.assignment_no = r1.assignment_no;
+    if(d <= to1 and d >= fr) then
+          select std_name into name from student where r1.std_id = std_id;
+          if(r1.submitted_on_date < d) then
+             dbms_output.put_line( name || chr(9) || chr(9) || chr(9) || chr(9) || r1.assignment_no ||
+              chr(9) || chr(9) || chr(9) || chr(9) || r1.submitted_on_date  || chr(9) || chr(9) || chr(9) || 'on time');
+          else
+            dbms_output.put_line(name || chr(9) || chr(9) || chr(9) || chr(9) || r1.assignment_no ||
+              chr(9) || chr(9) || chr(9) || chr(9) || r1.submitted_on_date  || chr(9) || chr(9) || chr(9) || 'late');
+          end if;
+    end if;
+  end loop;
+end;
+
+declare
+    f1 date:= :from;
+    t1 date:= :to;
+begin
+    dbms_output.put_line(chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || sysdate);
+    dbms_output.put_line(chr(9) || chr(9) || chr(9) || 'ASSIGNMENTS SUBMITTED  BETWEEN ' || f1 || ' and ' || t1);
+    dbms_output.put_line(chr(9) || chr(9) || chr(9) || '--------------------------------------------------------');
+    dbms_output.put_line('');
+    dbms_output.put_line('Student name    ' || chr(9) || chr(9) || 'Assignment Number    ' || chr(9) || chr(9) || 'Date of Submission    ' || chr(9) || chr(9) || 'Status');
+    fun6(f1,t1);
+end;
+
+
+begin
+insert into student values(11,'Preet1');
+insert into student values(21,'Harsh');
+insert into student values(31,'Nihir');
+insert into assignment values(11,'01/01/2020','01/15/2020');
+insert into assignment values(21,'01/16/2020','02/01/2020');
+insert into assignment values(31,'02/03/2020','02/19/2020');
+insert into submission values(11,11,'01/14/2020');
+insert into submission values(11,21,'01/30/2020');
+insert into submission values(11,31,'02/20/2020');
+insert into submission values(21,11,'01/16/2020');
+insert into submission values(21,21,'01/20/2020');
+insert into submission values(31,11,'01/09/2020');
+end
+
+/*answer of 7th*/
+create or replace procedure fun7 as 
+cursor sub is select std_id,assignment_no,submitted_on_date from submission;
+cursor ass is select assignment_no,date_given,last_date_of_submission from assignment;
+cursor std is select std_id,std_name from student;
+ass_on ass%rowtype;
+sub_on sub%rowtype;
+std_on std%rowtype;
+t_ass int;
+std_id int;
+t_sub int;
+counter int := 0;
+  f date;
+  l date;
+  k int;
+t_std int;
+begin
+  select count(assignment_no) into t_ass from assignment;
+  select count(std_id) into t_std from student;
+  select count(assignment_no) into t_sub from submission;
+  dbms_output.put_line(chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || chr(9) || sysdate);
+  dbms_output.put_line(chr(9) || chr(9) || chr(9) || 'Summary of Assignment Submission');
+  dbms_output.put_line(chr(9) || chr(9) || chr(9) || '--------------------------------');
+  dbms_output.put_line('');
+  dbms_output.put_line('Total no. of assignments given till date : ' || t_ass);
+  dbms_output.put_line('');
+  dbms_output.put_line('Assignments which are submitted by all the students  : ' ||t_sub);
+  dbms_output.put_line('');
+ 
+  for ass_on in ass loop
+    for sub_on in sub loop
+     if((sub_on.assignment_no = ass_on.assignment_no) and (sub_on.submitted_on_date >= ass_on.date_given) and (sub_on.submitted_on_date <= ass_on.last_date_of_submission)) then
+         counter := counter + 1;
+     end if;
+   end loop;
+  end loop;
+
+    dbms_output.put_line('Nmaes of students who have submitted on time: ' ||counter);
+  for std_on in std loop
+    for sub_on in sub loop
+     select date_given, last_date_of_submission into f,l from assignment where assignment_no=sub_on.assignment_no;
+       if (std_on.std_id=sub_on.std_id and sub_on.submitted_on_date>=f and sub_on.submitted_on_date<=l) then
+         dbms_output.put_line(std_on.std_name);
+       end if;  
+     end loop;
+  end loop;
+  k := t_ass - counter;
+   dbms_output.put_line('Names of students for late submission: ' ||k);
+  for std_on in std loop
+    for sub_on in sub loop
+     select date_given, last_date_of_submission into f,l from assignment where assignment_no=sub_on.assignment_no;
+       if (std_on.std_id=sub_on.std_id and sub_on.submitted_on_date>l) then
+         dbms_output.put_line(std_on.std_name);
+       end if;  
+     end loop;
+  end loop;
+  dbms_output.put_line('Student names who have not submitted  assignment : ');
+  for std_on in std loop
+    for sub_on in sub loop
+       if (std_on.std_id!=sub_on.std_id ) then
+         dbms_output.put_line(std_on.std_name);
+       end if;  
+     end loop;
+  end loop;
+end;
+
+
+
+begin
+  fun7;
+end;
+
+
+/*answer of correct 6th*/
+create or replace procedure check_submissions(from_date date, too_date date) as
+   cursor sub is select std_id, assignment_no, submitted_on_date from Submission;
+   cursor assign is select assignment_no, last_date_of_submission from Assignment;
+   cursor stu is select std_id, std_name from Student;
+   
+   s1 sub%rowtype;
+   s2 assign%rowtype;
+   s3 stu%rowtype;
+   
+   std_id varchar(10); /*10*/
+   assign_no int;
+   sub_date date;
+   std_name varchar(30);
+   temp int;
+   
+begin
+   dbms_output.put_line('                                                     ' || sysdate);
+   dbms_output.put_line('');
+   
+   dbms_output.put_line('Assignment Submitted between ' || from_date || ' and ' || too_date);
+   dbms_output.put_line('---------------------------------------------------------------------');
+   dbms_output.put_line('');
+   
+   for s1 in sub loop
+      std_id := s1.std_id;
+      assign_no := s1.assignment_no;
+      sub_date := s1.submitted_on_date; /*20*/
+ 
+      temp := 0;
+ 
+      if(sub_date < from_date or sub_date > too_date) then 
+         continue;
+      end if;
+ 
+      for s2 in assign loop
+         if(assign_no = s2.assignment_no) then
+            if(sub_date <= s2.last_date_of_submission) then
+               temp := 1;
+               exit;
+            end if;
+         end if;/*30*/
+      end loop;
+ 
+      for s3 in stu loop
+         if(std_id = s3.std_id) then
+            std_name := s3.std_name;
+            exit;
+         end if;
+      end loop;
+ 
+      if(temp = 0) then /*40*/
+         dbms_output.put_line(std_name || '        ' || assign_no || '        ' || sub_date || '         ' || 'Late');
+      elsif(temp = 1) then
+         dbms_output.put_line(std_name || '        ' || assign_no || '        ' || sub_date || '         ' || 'On Time');
+      end if;
+ 
+   end loop;
+end;
+declare
+ff date := :frm;
+ll date := :too;
+begin
+    check_submissions(ff,ll);
+end;
