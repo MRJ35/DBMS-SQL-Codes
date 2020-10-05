@@ -1,0 +1,113 @@
+create or replace procedure sum_num as
+         n1 int:=5;
+         n2 int:=9;
+         s int;
+begin
+         s:=n1+n2;
+         dbms_output.put_line('Sum ==> ' ||s);
+end;
+
+============ Calling block to run the procedure====
+
+declare
+begin
+      sum_num;
+end;
+
+===========passing parameters in the procedure =====
+
+create or replace procedure sum_num(n1 int,n2 int) as
+         s int;
+begin
+         s:=n1+n2;
+         dbms_output.put_line('Sum ==> ' ||s);
+end;
+ -------- calling block
+declare
+      num1 int := :num1;
+      num2 int := :num2;
+begin
+      sum_num(num1,num2);
+end;
+
+===========================================================
+
+create or replace procedure disp_emp as
+      cursor c_emp is select * from emp for update of sal;
+      r_emp c_emp%rowtype;
+      s emp.sal%type;  
+      c int:=0;
+begin
+      open c_emp;
+      loop
+             fetch c_emp into r_emp;
+             if c_emp%notfound then 
+                  exit;
+             end if;
+             if (r_emp.job='PRESIDENT') then
+                 s:=r_emp.sal+2000;
+                 c:=c+1;
+                update emp set sal=s where current of c_emp; 
+             end if;     
+             if (r_emp.job='SALESMAN') then
+                 s:=r_emp.sal+(r_emp.sal*0.1);
+	c:=c+1;
+                update emp set sal=s where current of c_emp; 
+             end if;     
+             dbms_output.put_line(r_emp.empno||' '||r_emp.job||' '||r_emp.sal);
+          
+       end loop;        
+   dbms_output.put_line('Total '||c||' records are updated');
+       close c_emp;
+end;
+
+
+--------------calling a procedure from PL/SQL block
+
+declare
+begin
+        disp_emp;
+end;
+
+========== Passing parameter in Cursor ========
+
+create or replace procedure disp_emp(j emp.job%type) as
+      cursor c_emp is select * from emp where job=j for update of sal;
+      r_emp c_emp%rowtype;
+      s emp.sal%type;  
+      c int:=0;
+begin
+      open c_emp;
+      loop
+             fetch c_emp into r_emp;
+             if (c_emp%notfound) then
+                 exit;
+             end if;
+                c:=c+1;
+                s:=r_emp.sal+(r_emp.sal*0.2);
+                update emp set sal=s where current of c_emp; 
+        end loop;        
+   dbms_output.put_line('Total '||c||' records are updated');
+       close c_emp;
+end;
+
+===================
+
+create or replace procedure disp_emp as
+      cursor c_emp is select * from emp;
+      r_emp c_emp%rowtype;
+begin
+        for r_emp in c_emp loop
+             dbms_output.put_line(r_emp.empno||' '||r_emp.job||' '||            r_emp.sal);
+        end loop;        
+end;
+
+ 
+===================================
+
+Links : 
+
+https://docs.oracle.com/cd/B28359_01/appdev.111/b28370/cursor_attribute.htm#LNPLS01311
+https://www.guru99.com/pl-sql-cursor.html
+https://www.techonthenet.com/oracle/cursors/attributes.php
+
