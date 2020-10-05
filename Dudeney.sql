@@ -38,3 +38,4 @@ end if;
 if(s=0)then
 dbms_output.put_line('Not a Dudeney number');
 end if;
+end;
