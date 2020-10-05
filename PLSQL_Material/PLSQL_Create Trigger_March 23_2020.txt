@@ -1,0 +1,204 @@
+===========Method-1 Using cursor.....for
+
+create or replace procedure show_items as
+     cursor c_item is select * from item;
+     cursor c_lineitem(ino item.itemno%type) is select * from lineitem where itemno=ino; 
+     r_item c_item%rowtype;
+     r_lineitem c_lineitem%rowtype;
+begin
+      for r_item in c_item loop
+           for r_lineitem in c_lineitem(r_item.itemno) loop
+                    dbms_output.put_line(r_item.itemname||'   '||r_lineitem.lineprice);
+           end loop; 
+      end loop;
+end;
+
+============Method-2 Using Open....Fetch....Loop....Close
+
+
+
+create or replace procedure show_item as
+     cursor c_item is select * from item;
+     cursor c_lineitem(ino item.itemno%type) is select * from lineitem where itemno=ino; 
+     r_item c_item%rowtype;
+     r_lineitem c_lineitem%rowtype;
+begin
+     open c_item;
+     loop
+         fetch c_item into r_item; 
+         exit when c_item%notfound;
+           dbms_output.put_line(r_item.itemname);
+           dbms_output.put_line('==============');
+             open c_lineitem(r_item.itemno); 
+             loop
+                  fetch c_lineitem into r_lineitem; 
+                  exit when c_lineitem%notfound; 
+                        dbms_output.put_line(r_lineitem.lineprice);
+             end loop; 
+             close c_lineitem;
+      end loop;
+      close c_item; 
+end;
+
+==============trigger : 
+
+create table track (op varchar2(15),tm timestamp);
+
+===================security
+
+create trigger tr1 before or after insert or update or delete on item 
+for each row
+begin
+      if inserting then
+           insert into track values('Insert', systimestamp);
+      elsif deleting then   
+           insert into track values('Delete', systimestamp);
+      else 
+           insert into track values('Update', systimestamp);
+      end if;
+end;
+
+
+===================
+
+Create a trigger which won't allow user to manipulate item table on Saturdays and Sundays.
+
+create or replace trigger tr3 before insert or delete or update on lineitem
+for each row
+begin
+        if trim(to_char(sysdate,'day'))='monday' or trim(to_char(sysdate,'day'))='sunday' then
+               raise_application_error(-20001,'You can''t manipulate ITEM table on weekends....');
+        end if;
+end;
+
+====================validation
+
+create a trigger which will validate itemtype field and won't allow to input/update values other tha 
+N, E, C and F in itemtype field.
+
+create or replace trigger tr4 before insert or update on item
+for each row
+begin
+      if inserting then
+          if (:new.itemtype<>'N' or :new.itemtype<>'F' or :new.itemtype<>'C' or :new.itemtype<>'E')            then
+               raise_application_error(-20001,'Invalid Item Type....');
+          end if;
+        
+      end;
+ 
+      if updating then
+                     if (:new.itemtype<>'N' or :new.itemtype<>'F' or :new.itemtype<>'C' or :new.itemtype<>'E')            then
+               raise_application_error(-20001,'Invalid Item Type....');
+          end if;
+      end;
+end;
+
+================delete related records from child table
+
+delete child record automatically from lineitem when record is deleted from item table
+
+create or replace trigger del_child before delete on item
+for each row
+       delete from lineitem where itemno=:old.itemno;
+end;
+
+===================
+
+create table marks(rollno int,dbms int, oop int, dm int)
+create table res(rollno int,perc number(5,2),grade char(2));
+
+create or replace trigger ins_res after insert on marks
+for each row
+declare
+        tmp_per number(5,2);
+        tmp_gr char(2);
+begin
+        tmp_per:=(:new.dbms+:new.oop+:new.dm)/3;
+        if (tmp_per>=90) then
+            tmp_gr:='A+'; 
+        elsif (tmp_per>=80 and tmp_per<90) then
+            tmp_gr:='A';
+        elsif (tmp_per>=70 and tmp_per<80) then
+            tmp_gr:='A-';
+        elsif (tmp_per>=60 and tmp_per<70) then
+            tmp_gr:='B+';
+        elsif (tmp_per>=50 and tmp_per<60) then
+            tmp_gr:='B';
+        elsif (tmp_per>=40 and tmp_per<50) then
+            tmp_gr:='B-';
+        else
+            tmp_gr:='F';
+        end if; 
+        insert into res values(:new.rollno,tmp_per,tmp_gr);
+end;
+
+
+======================Function returning many values
+
+create or replace function itm return varchar2 as
+      cursor c_item is select itemname from item;
+      r_item c_item%rowtype;
+      itm_nm varchar2(5000):='';
+begin
+      for r_item in c_item loop
+          if r_item.itemname is not null then
+              itm_nm:=itm_nm||', '||r_item.itemname;
+          end if;
+      end loop; 
+      return itm_nm;
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

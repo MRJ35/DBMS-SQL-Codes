@@ -1,0 +1,58 @@
+===========creating function  =====
+create or replace function sum_num_fun(n1 int,n2 int) return int as
+         s int;
+begin
+         s:=n1+n2;
+         return s;
+end;
+ -------- Method-1 to call function : calling block 
+declare
+      num1 int := :num1;
+      num2 int := :num2;
+      s int;
+begin
+      s:=sum_num_fun(num1,num2);
+      dbms_output.put_line('Sum==> '||s);
+end;
+
+------Method -2 to call function : select statement
+
+select sum_num_fun(45,65) from dual;
+
+--------------- 
+
+create or replace function merge_nm(fname varchar2, surname varchar2) return varchar2 as
+begin
+      return fname||' '||surname;
+end;
+ -------- calling block
+declare
+	fnm varchar2(20) := :fnm;
+	lnm varchar2(20) := :lnm;
+	full_nm varchar2(50);	
+begin
+      	full_nm:=merger_nm(fnm,lnm);
+                dbms_output.put_line('Full Name ==> '||full_nm);
+end;
+
+create or replace function disp(birth_date date) return varchar2 as
+         dt varchar2(60);
+         age int;
+begin
+        dt := to_char(birth_date,'day, ddth month yyyy'); 
+        age := months_between(sysdate,birth_date)/12;
+        return dt||'  Age ==>'||age;
+end;
+ -------- calling block
+declare
+                d date := :d;
+	full_str varchar2(100);	
+begin
+      	full_str:=disp(d);
+                dbms_output.put_line('birth date and age  ==> '||full_str);
+end;
+
+
+
+
+

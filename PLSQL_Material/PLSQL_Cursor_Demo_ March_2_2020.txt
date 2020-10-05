@@ -1,0 +1,175 @@
+Cursor : 
+--------
+Oracle creates a memory area, known as the context area, for processing an SQL statement, which contains all the information needed for processing the statement. for example, the number of rows processed, etc. 
+
+A cursor is a pointer to this context area. PL/SQL controls the context area through a cursor. A cursor holds the rows (one or more) returned by an SQL statement. The set of rows the cursor holds is referred to as the active set.
+
+You can name a cursor so that it could be referred to in a program to fetch and process the rows returned by the SQL statement, one at a time. There are two types of cursors - Implicit cursors and Explicit cursors
+
+cursor attributes :  %FOUND, %ISOPEN,  %NOTFOUND, %ROWCOUNT, %TYPE and %ROWTYPE 
+
+-------------------
+
+%FOUND : Before the first row fetched from an open cursor, %FOUND returns NULL. i.e., initially it returns NULL. It returns TRUE if the fetch statement returns a row else returns FALSE. 
+
+%NOTFOUND : Before the first row fetched from an open cursor, %NOTFOUND returns NULL. i.e., initially it returns NULL. It returns FALSE if the fetch statement returns a row else returns TRUE. %notfound functions exactly reverse to %found.
+
+%ISOPEN : Returns TRUE if cursor is open else returs FALSE.
+
+%ROWCOUNT : Initially it returns 0 (When cur sor is open but no rows are fetched from the cursor).  Thereafter, it returns the number of rows fetched so far.
+ 
+%TYPE : The %TYPE attribute lets you declare a constant, variable, field, or parameter to be of the same data type a previously declared variable, field, record, nested table, or database column. If the referenced item changes, your declaration is automatically updated.
+
+%ROWTYPE : The %ROWTYPE attribute provides a record type that represents a row in a database table. The record can store an entire row of data selected from the table or fetched from a cursor or cursor variable. Fields in a record and corresponding columns in a row have the same names and datatypes.
+
+
+============================== Implicit Cursor ==================================
+
+Implicit cursor is an in-build cursor created automatically when the SQL statement is written. It is referred with the name "sql" in oracle. Programmers(Users) cannot control the implicit cursors and the information in it. 
+ 
+
+declare
+         m float;
+         n float;
+         a float;
+         c int;
+begin
+         select max(lineprice),min(lineprice),avg(lineprice),count(*) into
+                   m,n,a,c from lineitem;
+         dbms_output.put_line('Total no. of items : '||c); 
+         dbms_output.put_line('Maximum price : '||m);
+         dbms_output.put_line('Minimum price : '||n);
+         dbms_output.put_line('Average price : '||round(a,0));
+end; 
+/  
+
+Note : Implicit cursor returns exactly one row. If the SQL statement returns more than one row, it will give an error. Try the following example to view the error. 
+
+declare
+         l1 int;
+         l2 int;
+         l3 int;
+         l4 int;
+         l5 int;
+begin
+         select lineno,lineqty,lineprice,saleno,itemno into l1, l2, l3, l4, l5 from lineitem;
+         dbms_output.put_line('Lineno : '||l1); 
+end; 
+/
+
+========================= Explicit (User-defined) Cursor ========================
+
+Explicit cursors are programmer-defined (User-defined) cursors for gaining more control over the context area. An explicit cursor should be defined in the declaration section of the PL/SQL Block. It is created on a SELECT Statement which returns more than one row.
+
+The syntax for creating an explicit cursor is −
+
+CURSOR cursor_name IS select_statement; 
+
+Working with an explicit cursor includes the following steps:−
+
+1. Declaring the cursor for initializing the memory
+2. Opening the cursor for allocating the memory
+3. Fetching the cursor for retrieving the data
+4. Closing the cursor to release the allocated memory 
+
+                                Declaring the Cursor
+                                -------------------- 
+Declaring the cursor defines the cursor with a name and the associated SELECT statement. 
+
+For example : CURSOR c_customers IS SELECT id, names FROM customers; 
+
+                                 Opening the Cursor
+                                 ------------------
+
+Opening the cursor allocates the memory for the cursor and makes it ready for fetching the rows returned by the SQL statement into it. 
+
+For example(We will open the above defined cursor as) : OPEN c_customers; 
+
+                            Fetching rows from the Cursor
+                            -----------------------------
+
+Fetching the rows from the cursor involves accessing one row at a time. 
+
+For example(We will fetch rows from the above-opened cursor as) : 
+     FETCH c_customers INTO c_id, c_name; 
+
+
+                                  Closing the Cursor
+                                  ------------------ 
+
+Closing the cursor means releasing the allocated memory. 
+
+For example(We will close the above-opened cursor as) : CLOSE c_customers;
+
+
+Following is a complete example to illustrate the concepts of explicit cursors.
+
+declare 
+   l_no lineitem.lineno%type; 
+   l_price lineitem.lineprice%type; 
+   cursor c_lineitem is select lineno, lineprice FROM lineitem; 
+begin 
+   open c_lineitem; 
+   loop
+       fetch c_lineitem into l_no, l_price; 
+       exit when c_lineitem%notfound; 
+       dbms_output.put_line(l_no || ' ' || l_price); 
+   end loop; 
+   close c_lineitem; 
+end; 
+/
+========================more EXAMPLES of Explicit Cursor====================
+
+
+declare
+      cursor c_emp is select * from emp;
+      r_emp c_emp%rowtype;
+begin
+      open c_emp;
+      loop
+             fetch c_emp into r_emp;
+             if c_emp%notfound then 
+                  exit;
+             end if;
+             dbms_output.put_line(r_emp.empno);
+       end loop;        
+       close c_emp;
+end;
+
+========= Updating records using cursor ==========
+
+
+declare
+      cursor c_emp is select * from emp for update of sal;
+      r_emp c_emp%rowtype;
+      s emp.sal%type;  
+      c int:=0;
+begin
+      open c_emp;
+      loop
+             fetch c_emp into r_emp;
+             if c_emp%notfound then 
+                  exit;
+             end if;
+             if (r_emp.job='PRESIDENT') then
+                 s:=r_emp.sal+2000;
+                 c:=c+1;
+                update emp set sal=s where current of c_emp; 
+             end if;     
+             if (r_emp.job='SALESMAN') then
+                 s:=r_emp.sal+(r_emp.sal*0.1);
+	         c:=c+1;
+                 update emp set sal=s where current of c_emp; 
+             end if;     
+             dbms_output.put_line(r_emp.empno||' '||r_emp.job||' '||r_emp.sal);             end loop;        
+   dbms_output.put_line('Total '||c||' records are updated');
+       close c_emp;
+end;
+
+
+
+
+
+
+
+
